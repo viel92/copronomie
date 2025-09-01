@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Les documents contiennent déjà le texte extrait côté client
-      const documentsTextes = documents.map((doc: any) => ({
+      const documentsTextes = documents.map((doc: { filename: string; content: string }) => ({
         filename: doc.filename,
         content: doc.content
       }))
@@ -206,7 +206,7 @@ Sois factuel et précis.`
       }
 
       // Nettoyage robuste du JSON
-      let cleanedContent = analysisContent
+      const cleanedContent = analysisContent
         .trim()
         // Supprimer blocs markdown
         .replace(/```json\s*/, '')
@@ -237,7 +237,7 @@ Sois factuel et précis.`
         .insert({
           user_id: user.id,
           nombre_devis: documents.length,
-          noms_fichiers: documents.map((d: any) => d.filename),
+          noms_fichiers: documents.map((d: { filename: string; content: string }) => d.filename),
           synthese_executive: comparison.synthese_executive,
           comparaison_detaillee: comparison.comparaison_detaillee,
           cahier_des_charges: comparison.cahier_des_charges,
@@ -259,7 +259,7 @@ Sois factuel et précis.`
         comparison: comparison,
         saved_comparison: savedComparison,
         tokens_used: completion.usage?.total_tokens,
-        files_analyzed: documents.map((d: any) => d.filename)
+        files_analyzed: documents.map((d: { filename: string; content: string }) => d.filename)
       })
 
     } catch (error) {

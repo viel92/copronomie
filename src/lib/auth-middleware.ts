@@ -1,9 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createApiClient } from '@/lib/supabase/server-client'
+import type { SupabaseClient, User } from '@supabase/supabase-js'
+
+interface UserWithProfile extends User {
+  profile: {
+    id: string
+    organization_id: string
+    role: string
+    organization: {
+      id: string
+      name: string
+      plan: string
+    }
+  }
+}
 
 export async function withAuth(
   request: NextRequest,
-  handler: (request: NextRequest, supabase: any, user: any) => Promise<NextResponse>
+  handler: (request: NextRequest, supabase: SupabaseClient, user: UserWithProfile) => Promise<NextResponse>
 ) {
   try {
     const supabase = await createApiClient(request)
@@ -30,7 +44,7 @@ export async function withAuth(
     }
 
     // Ajouter le profil à l'objet user
-    const userWithProfile = {
+    const userWithProfile: UserWithProfile = {
       ...user,
       profile
     }

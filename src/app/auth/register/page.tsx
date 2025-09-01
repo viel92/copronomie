@@ -234,7 +234,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="text-xs text-gray-500 text-center">
-            En créant un compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
+            En créant un compte, vous acceptez nos conditions d&apos;utilisation et notre politique de confidentialité.
           </div>
         </form>
       </div>
