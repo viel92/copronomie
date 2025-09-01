@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["pdf2pic"],
+  serverExternalPackages: ["pdf2pic", "canvas"],
   
   webpack: (config, { isServer }) => {
     if (isServer) {

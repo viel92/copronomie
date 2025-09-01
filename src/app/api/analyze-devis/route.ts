@@ -61,11 +61,12 @@ export async function POST(request: NextRequest) {
             // Extraire le texte avec pdfjs-dist (configuration ESM pour Vercel)
             console.log('Import pdfjs-dist ESM...')
             
-            // Import ESM pour Vercel Serverless Functions
+            // Import ESM pour Vercel Serverless Functions avec canvas natif
             const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
             
-            // Désactiver le worker pour environnement serverless
+            // Configuration pour environnement serverless
             pdfjs.GlobalWorkerOptions.workerSrc = ''
+            pdfjs.GlobalWorkerOptions.workerPort = null as any
             
             const doc = await pdfjs.getDocument({
               data: buffer,
@@ -165,12 +166,13 @@ export async function POST(request: NextRequest) {
             // Tenter l'extraction avec pdfjs-dist (configuration ESM pour Vercel)
             console.log('Import pdfjs-dist ESM...')
             
-            // Import ESM pour Vercel Serverless Functions
+            // Import ESM pour Vercel Serverless Functions avec canvas natif
             const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
             console.log('pdfjs-dist importé')
             
-            // Désactiver le worker pour environnement serverless
+            // Configuration pour environnement serverless
             pdfjs.GlobalWorkerOptions.workerSrc = ''
+            pdfjs.GlobalWorkerOptions.workerPort = null as any
             
             console.log('Chargement du document PDF...')
             const doc = await pdfjs.getDocument({
