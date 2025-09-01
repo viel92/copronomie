@@ -181,6 +181,8 @@ export async function POST(request: NextRequest) {
 
       Sois précis dans l'extraction des montants et quantités. Si une information n'est pas disponible, utilise null.`
 
+      console.log('Début appel OpenAI, texte longueur:', analysisText.length)
+      
       // Appel à OpenAI GPT-4
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini", // Plus économique pour l'analyse de texte
@@ -198,9 +200,12 @@ export async function POST(request: NextRequest) {
         temperature: 0.1, // Faible température pour plus de consistance
       })
 
+      console.log('Réponse OpenAI reçue, tokens:', completion.usage?.total_tokens)
       const analysisContent = completion.choices[0]?.message?.content
+      console.log('Contenu analyse IA:', analysisContent?.substring(0, 200) + '...')
 
       if (!analysisContent) {
+        console.log('Pas de contenu dans la réponse OpenAI')
         return NextResponse.json(
           { error: 'Erreur lors de l\'analyse IA' },
           { status: 500 }
@@ -210,11 +215,17 @@ export async function POST(request: NextRequest) {
       // Parser la réponse JSON
       let analysis: DevisAnalysis
       try {
+        console.log('Tentative parsing JSON...')
         analysis = JSON.parse(analysisContent)
+        console.log('JSON parsé avec succès, entreprise:', analysis.entreprise, 'montant:', analysis.montant_total)
       } catch (parseError) {
         console.error('Erreur parsing JSON OpenAI:', parseError)
+        console.error('Contenu brut reçu:', analysisContent)
         return NextResponse.json(
-          { error: 'Erreur format réponse IA' },
+          { 
+            error: 'Erreur format réponse IA',
+            rawContent: analysisContent.substring(0, 500)
+          },
           { status: 500 }
         )
       }
