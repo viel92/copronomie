@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
             
             // Désactiver le worker pour Vercel
             if (pdfjsLib.GlobalWorkerOptions) {
-              pdfjsLib.GlobalWorkerOptions.workerSrc = null
+              pdfjsLib.GlobalWorkerOptions.workerSrc = ''
             }
             
             console.log('Chargement du document PDF...')
