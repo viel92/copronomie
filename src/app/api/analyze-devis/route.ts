@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/auth-middleware'
 import OpenAI from 'openai'
-import pdf from 'pdf-parse'
+// Dynamic import to avoid build-time initialization issues
 
 // Initialiser OpenAI
 const openai = new OpenAI({
@@ -75,7 +75,8 @@ export async function POST(request: NextRequest) {
             const arrayBuffer = await fileData.arrayBuffer()
             const buffer = Buffer.from(arrayBuffer)
 
-            // Extraire le texte avec pdf-parse
+            // Extraire le texte avec pdf-parse (dynamic import)
+            const pdf = (await import('pdf-parse')).default
             const pdfData = await pdf(buffer)
             analysisText = pdfData.text
 
