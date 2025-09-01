@@ -33,8 +33,28 @@ export async function POST(request: NextRequest) {
   return withAuth(request, async (request, supabase, user) => {
     try {
       console.log('Auth réussie, user:', user.id)
-      const body = await request.json()
-      console.log('Body reçu:', { documentId: body.documentId, hasText: !!body.text })
+      
+      // Validation et parsing sécurisé du JSON
+      let body: any
+      try {
+        const rawBody = await request.text()
+        console.log('Raw body reçu:', rawBody.substring(0, 200) + (rawBody.length > 200 ? '...' : ''))
+        body = JSON.parse(rawBody)
+        console.log('Body parsé avec succès:', { documentId: body.documentId, hasText: !!body.text })
+      } catch (jsonError) {
+        console.error('Erreur parsing JSON:', {
+          error: jsonError instanceof Error ? jsonError.message : 'Erreur inconnue',
+          position: jsonError instanceof SyntaxError ? (jsonError as any).position : undefined
+        })
+        return NextResponse.json(
+          { 
+            error: 'Format JSON invalide dans la requête',
+            details: jsonError instanceof Error ? jsonError.message : 'Erreur parsing JSON'
+          },
+          { status: 400 }
+        )
+      }
+      
       const { documentId, documentUrl, text } = body
 
       if (!documentId && !documentUrl && !text) {
