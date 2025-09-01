@@ -455,7 +455,7 @@ export default function ComparatorV2Page() {
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Comparaison Détaillée</h2>
             
             <div className="grid gap-6">
-              {comparison.comparaison_detaillee.map((devis, index) => (
+              {comparison.comparaison_detaillee?.map((devis, index) => (
                 <div key={index} className="border border-slate-200 rounded-xl overflow-hidden">
                   <div className="bg-slate-50 px-6 py-4 border-b border-slate-200">
                     <div className="flex items-center justify-between">
@@ -488,7 +488,7 @@ export default function ComparatorV2Page() {
                       <div>
                         <h4 className="font-semibold text-green-700 mb-2">Points Forts</h4>
                         <ul className="space-y-1">
-                          {devis.points_forts.map((point, i) => (
+                          {devis.points_forts?.map((point, i) => (
                             <li key={i} className="flex items-center gap-2 text-sm text-slate-700">
                               <CheckCircle2 className="h-3 w-3 text-green-500 flex-shrink-0" />
                               {point}
@@ -500,7 +500,7 @@ export default function ComparatorV2Page() {
                       <div>
                         <h4 className="font-semibold text-orange-700 mb-2">Points Faibles</h4>
                         <ul className="space-y-1">
-                          {devis.points_faibles.map((point, i) => (
+                          {devis.points_faibles?.map((point, i) => (
                             <li key={i} className="flex items-center gap-2 text-sm text-slate-700">
                               <AlertTriangle className="h-3 w-3 text-orange-500 flex-shrink-0" />
                               {point}
@@ -514,7 +514,7 @@ export default function ComparatorV2Page() {
                       <div className="mt-4">
                         <h4 className="font-semibold text-slate-900 mb-2">Garanties</h4>
                         <div className="flex flex-wrap gap-2">
-                          {devis.garanties.map((garantie, i) => (
+                          {devis.garanties?.map((garantie, i) => (
                             <span key={i} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
                               {garantie}
                             </span>
@@ -548,7 +548,7 @@ export default function ComparatorV2Page() {
               <div>
                 <h4 className="font-semibold text-slate-900 mb-3">Postes de Travaux</h4>
                 <div className="space-y-4">
-                  {comparison.cahier_des_charges.postes_travaux.map((poste, index) => (
+                  {comparison.cahier_des_charges?.postes_travaux?.map((poste, index) => (
                     <div key={index} className="border border-slate-200 rounded-lg p-4">
                       <h5 className="font-semibold text-slate-900">{poste.intitule}</h5>
                       <p className="text-slate-700 text-sm mb-2">{poste.description}</p>
@@ -558,7 +558,7 @@ export default function ComparatorV2Page() {
                       <div className="text-sm">
                         <span className="font-medium text-slate-900">Spécifications:</span>
                         <ul className="list-disc list-inside text-slate-600">
-                          {poste.specifications_techniques.map((spec, i) => (
+                          {poste.specifications_techniques?.map((spec, i) => (
                             <li key={i}>{spec}</li>
                           ))}
                         </ul>
@@ -618,7 +618,7 @@ export default function ComparatorV2Page() {
                   <div>
                     <h4 className="font-semibold text-slate-900">Postes Variables</h4>
                     <ul className="list-disc list-inside text-slate-700">
-                      {comparison.analyse_ecarts.postes_variables.map((poste, i) => (
+                      {comparison.analyse_ecarts?.postes_variables?.map((poste, i) => (
                         <li key={i}>{poste}</li>
                       ))}
                     </ul>
@@ -632,7 +632,7 @@ export default function ComparatorV2Page() {
               <h3 className="text-xl font-bold text-slate-900 mb-4">Recommandations de Négociation</h3>
               
               <ul className="space-y-3">
-                {comparison.recommandations_negociation.map((rec, index) => (
+                {comparison.recommandations_negociation?.map((rec, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                     <span className="text-slate-700">{rec}</span>

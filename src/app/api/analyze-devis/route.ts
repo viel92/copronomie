@@ -75,10 +75,20 @@ export async function POST(request: NextRequest) {
             const arrayBuffer = await fileData.arrayBuffer()
             const buffer = Buffer.from(arrayBuffer)
 
-            // Extraire le texte avec pdf-parse (dynamic import)
-            const pdf = (await import('pdf-parse')).default
-            const pdfData = await pdf(buffer)
-            analysisText = pdfData.text
+            // Extraire le texte avec pdfjs-dist (compatible Vercel)
+            const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf')
+            const pdf = await pdfjsLib.getDocument({ data: buffer }).promise
+            
+            let fullText = ''
+            for (let i = 1; i <= pdf.numPages; i++) {
+              const page = await pdf.getPage(i)
+              const textContent = await page.getTextContent()
+              const pageText = textContent.items
+                .map((item: any) => item.str)
+                .join(' ')
+              fullText += pageText + '\n'
+            }
+            analysisText = fullText
 
             if (!analysisText || analysisText.trim().length === 0) {
               throw new Error('Impossible d\'extraire le texte du PDF')
