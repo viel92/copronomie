@@ -29,12 +29,16 @@ interface DevisAnalysis {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('=== DEBUT API analyze-devis ===')
   return withAuth(request, async (request, supabase, user) => {
     try {
+      console.log('Auth réussie, user:', user.id)
       const body = await request.json()
+      console.log('Body reçu:', { documentId: body.documentId, hasText: !!body.text })
       const { documentId, documentUrl, text } = body
 
       if (!documentId && !documentUrl && !text) {
+        console.log('Erreur: Paramètres manquants')
         return NextResponse.json(
           { error: 'Document ID, URL ou texte requis pour l\'analyse' },
           { status: 400 }
@@ -45,6 +49,7 @@ export async function POST(request: NextRequest) {
       
       // Si on a un documentId, récupérer le document depuis la DB
       if (documentId) {
+        console.log('Recherche document ID:', documentId, 'pour user:', user.id)
         const { data: document, error: docError } = await supabase
           .from('documents')
           .select('*')
@@ -53,11 +58,13 @@ export async function POST(request: NextRequest) {
           .single()
 
         if (docError || !document) {
+          console.log('Document non trouvé:', { docError, document })
           return NextResponse.json(
             { error: 'Document non trouvé ou accès refusé' },
             { status: 404 }
           )
         }
+        console.log('Document trouvé:', { id: document.id, type: document.type, hasFilePath: !!document.file_path })
 
         // Extraire le texte du PDF si c'est un PDF
         if (document.type === 'application/pdf' && document.file_path) {
