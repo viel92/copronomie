@@ -64,14 +64,29 @@ export async function POST(request: NextRequest) {
             // Extraire le texte avec pdfjs-dist build Node.js (sans dépendances DOM)
             console.log('Import pdfjs-dist build Node.js...')
             
-            // Build Node.js officielle - pas de DOMMatrix/Canvas
-            const pdfjs = require('pdfjs-dist/build/pdf.node.js')
+            // Build ES Module avec polyfills pour Node.js
+            // Polyfills minimaux avant import
+            if (typeof globalThis.DOMMatrix === 'undefined') {
+              (globalThis as any).DOMMatrix = class { constructor() {} }
+            }
+            if (typeof globalThis.ImageData === 'undefined') {
+              (globalThis as any).ImageData = class { constructor() {} }
+            }
+            if (typeof globalThis.Path2D === 'undefined') {
+              (globalThis as any).Path2D = class { constructor() {} }
+            }
+            
+            const pdfjs = require('pdfjs-dist')
+            
+            // Configuration pour environnement Node.js
+            pdfjs.GlobalWorkerOptions.workerSrc = ''
             
             const loadingTask = pdfjs.getDocument({
               data: buffer,
-              disableWorker: true,     // pas de worker
-              isEvalSupported: false,  // pas d'eval
-              disableFontFace: true,   // pas de chargement de polices
+              disableWorker: true,
+              isEvalSupported: false,
+              disableFontFace: true,
+              useSystemFonts: false
             })
             const doc = await loadingTask.promise
             console.log('PDF chargé, pages:', doc.numPages)
@@ -164,16 +179,31 @@ export async function POST(request: NextRequest) {
             // Tenter l'extraction avec pdfjs-dist build Node.js (sans dépendances DOM)
             console.log('Import pdfjs-dist build Node.js...')
             
-            // Build Node.js officielle - pas de DOMMatrix/Canvas
-            const pdfjs = require('pdfjs-dist/build/pdf.node.js')
+            // Build ES Module avec polyfills pour Node.js
+            // Polyfills minimaux avant import
+            if (typeof globalThis.DOMMatrix === 'undefined') {
+              (globalThis as any).DOMMatrix = class { constructor() {} }
+            }
+            if (typeof globalThis.ImageData === 'undefined') {
+              (globalThis as any).ImageData = class { constructor() {} }
+            }
+            if (typeof globalThis.Path2D === 'undefined') {
+              (globalThis as any).Path2D = class { constructor() {} }
+            }
+            
+            const pdfjs = require('pdfjs-dist')
             console.log('pdfjs-dist importé')
             
             console.log('Chargement du document PDF...')
+            // Configuration pour environnement Node.js
+            pdfjs.GlobalWorkerOptions.workerSrc = ''
+            
             const loadingTask = pdfjs.getDocument({
               data: buffer,
-              disableWorker: true,     // pas de worker
-              isEvalSupported: false,  // pas d'eval
-              disableFontFace: true,   // pas de chargement de polices
+              disableWorker: true,
+              isEvalSupported: false,
+              disableFontFace: true,
+              useSystemFonts: false
             })
             const doc = await loadingTask.promise
             console.log('PDF chargé, pages:', doc.numPages)
