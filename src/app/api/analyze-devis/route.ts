@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
             const buffer = Buffer.from(arrayBuffer)
 
             // Extraire le texte avec pdfjs-dist (compatible Vercel)
-            const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf')
+            const pdfjsLib = await import('pdfjs-dist')
             const pdf = await pdfjsLib.getDocument({ data: buffer }).promise
             
             let fullText = ''
