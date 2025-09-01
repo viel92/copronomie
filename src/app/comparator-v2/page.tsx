@@ -30,6 +30,7 @@ interface DevisComparison {
   comparaison_detaillee: {
     entreprise: string
     montant_total: number
+    montant_ht?: number
     quantite_materiel: string
     prix_unitaire: string | null
     delai_realisation: string
@@ -125,7 +126,7 @@ export default function ComparatorV2Page() {
       const page = await pdf.getPage(i)
       const textContent = await page.getTextContent()
       const pageText = textContent.items
-        .map((item: any) => item.str)
+        .map((item: { str: string }) => item.str)
         .join(' ')
       fullText += pageText + '\n'
     }
