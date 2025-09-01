@@ -57,7 +57,18 @@ export async function POST(request: NextRequest) {
             
             // Extraire le texte avec pdfjs-dist
             console.log('Import pdfjs-dist...')
-            const pdfjsLib = await import('pdfjs-dist')
+            
+            // Polyfills pour l'environnement serveur
+            if (typeof globalThis.DOMMatrix === 'undefined') {
+              globalThis.DOMMatrix = class DOMMatrix {
+                constructor() {
+                  this.a = 1; this.b = 0; this.c = 0; 
+                  this.d = 1; this.e = 0; this.f = 0;
+                }
+              } as any
+            }
+            
+            const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js')
             
             if (pdfjsLib.GlobalWorkerOptions) {
               pdfjsLib.GlobalWorkerOptions.workerSrc = ''
@@ -66,7 +77,10 @@ export async function POST(request: NextRequest) {
             const pdf = await pdfjsLib.getDocument({ 
               data: buffer,
               useWorkerFetch: false,
-              isEvalSupported: false
+              isEvalSupported: false,
+              standardFontDataUrl: '',
+              disableFontFace: true,
+              useSystemFonts: false
             }).promise
             console.log('PDF chargé, pages:', pdf.numPages)
             
@@ -160,7 +174,18 @@ export async function POST(request: NextRequest) {
 
             // Tenter l'extraction avec pdfjs-dist
             console.log('Import pdfjs-dist...')
-            const pdfjsLib = await import('pdfjs-dist')
+            
+            // Polyfills pour l'environnement serveur
+            if (typeof globalThis.DOMMatrix === 'undefined') {
+              globalThis.DOMMatrix = class DOMMatrix {
+                constructor() {
+                  this.a = 1; this.b = 0; this.c = 0; 
+                  this.d = 1; this.e = 0; this.f = 0;
+                }
+              } as any
+            }
+            
+            const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js')
             console.log('pdfjs-dist importé')
             
             // Désactiver le worker pour Vercel
@@ -172,7 +197,10 @@ export async function POST(request: NextRequest) {
             const pdf = await pdfjsLib.getDocument({ 
               data: buffer,
               useWorkerFetch: false,
-              isEvalSupported: false
+              isEvalSupported: false,
+              standardFontDataUrl: '',
+              disableFontFace: true,
+              useSystemFonts: false
             }).promise
             console.log('PDF chargé, pages:', pdf.numPages)
             
