@@ -1,10 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["pdf2pic", "pdfjs-dist"],
+  serverExternalPackages: ["pdf2pic"],
   
   webpack: (config, { isServer }) => {
-    if (!isServer) {
+    if (isServer) {
+      // Configuration serveur pour pdfjs-dist
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        canvas: false,
+        worker_threads: false
+      };
+    } else {
+      // Configuration client
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,

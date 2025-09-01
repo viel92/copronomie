@@ -5,7 +5,11 @@
   "framework": "nextjs",
   "functions": {
     "src/app/api/**/*.ts": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "memory": 1024
     }
+  },
+  "env": {
+    "NODE_OPTIONS": "--max-old-space-size=1024"
   }
 }

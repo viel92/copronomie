@@ -510,7 +510,7 @@ export default function ComparatorV2Page() {
                       </div>
                     </div>
 
-                    {devis.garanties.length > 0 && (
+                    {devis.garanties?.length > 0 && (
                       <div className="mt-4">
                         <h4 className="font-semibold text-slate-900 mb-2">Garanties</h4>
                         <div className="flex flex-wrap gap-2">
@@ -614,7 +614,7 @@ export default function ComparatorV2Page() {
                   <p>{comparison.analyse_ecarts.ecart_delai_max_min}</p>
                 </div>
 
-                {comparison.analyse_ecarts.postes_variables.length > 0 && (
+                {comparison.analyse_ecarts?.postes_variables?.length > 0 && (
                   <div>
                     <h4 className="font-semibold text-slate-900">Postes Variables</h4>
                     <ul className="list-disc list-inside text-slate-700">

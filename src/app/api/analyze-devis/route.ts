@@ -34,38 +34,89 @@ export async function POST(request: NextRequest) {
     try {
       console.log('Auth réussie, user:', user.id)
       
-      // Validation et parsing sécurisé du JSON
-      let body: any
-      try {
-        const rawBody = await request.text()
-        console.log('Raw body reçu:', rawBody.substring(0, 200) + (rawBody.length > 200 ? '...' : ''))
-        body = JSON.parse(rawBody)
-        console.log('Body parsé avec succès:', { documentId: body.documentId, hasText: !!body.text })
-      } catch (jsonError) {
-        console.error('Erreur parsing JSON:', {
-          error: jsonError instanceof Error ? jsonError.message : 'Erreur inconnue',
-          position: jsonError instanceof SyntaxError ? (jsonError as any).position : undefined
-        })
-        return NextResponse.json(
-          { 
-            error: 'Format JSON invalide dans la requête',
-            details: jsonError instanceof Error ? jsonError.message : 'Erreur parsing JSON'
-          },
-          { status: 400 }
-        )
+      // Détection du type de contenu
+      const contentType = request.headers.get('content-type') || ''
+      console.log('Content-Type reçu:', contentType)
+      
+      let body: any = {}
+      let analysisText = ''
+      
+      // Si c'est du multipart/form-data (upload de fichier)
+      if (contentType.includes('multipart/form-data')) {
+        console.log('Traitement multipart/form-data')
+        try {
+          const formData = await request.formData()
+          const file = formData.get('file') as File
+          
+          if (file && file.type === 'application/pdf') {
+            console.log('Fichier PDF reçu:', { name: file.name, size: file.size })
+            
+            // Convertir le fichier en buffer
+            const arrayBuffer = await file.arrayBuffer()
+            const buffer = Buffer.from(arrayBuffer)
+            
+            // Extraire le texte avec pdfjs-dist
+            console.log('Import pdfjs-dist...')
+            const pdfjsLib = await import('pdfjs-dist')
+            
+            if (pdfjsLib.GlobalWorkerOptions) {
+              pdfjsLib.GlobalWorkerOptions.workerSrc = ''
+            }
+            
+            const pdf = await pdfjsLib.getDocument({ 
+              data: buffer,
+              useWorkerFetch: false,
+              isEvalSupported: false
+            }).promise
+            console.log('PDF chargé, pages:', pdf.numPages)
+            
+            let fullText = ''
+            for (let i = 1; i <= pdf.numPages; i++) {
+              const page = await pdf.getPage(i)
+              const textContent = await page.getTextContent()
+              const pageText = textContent.items
+                .map((item: any) => item.str)
+                .join(' ')
+              fullText += pageText + '\n'
+            }
+            
+            analysisText = fullText
+            console.log('Texte extrait du PDF, longueur:', analysisText.length)
+          }
+        } catch (formError) {
+          console.error('Erreur traitement FormData:', formError)
+          return NextResponse.json(
+            { error: 'Erreur lors du traitement du fichier uploadé' },
+            { status: 400 }
+          )
+        }
+      } 
+      // Si c'est du JSON
+      else {
+        console.log('Traitement JSON')
+        try {
+          body = await request.json()
+          console.log('Body JSON parsé:', { documentId: body.documentId, hasText: !!body.text })
+          analysisText = body.text || ''
+        } catch (jsonError) {
+          console.error('Erreur parsing JSON:', jsonError)
+          return NextResponse.json(
+            { error: 'Format JSON invalide' },
+            { status: 400 }
+          )
+        }
       }
       
-      const { documentId, documentUrl, text } = body
+      const { documentId, documentUrl } = body
 
-      if (!documentId && !documentUrl && !text) {
-        console.log('Erreur: Paramètres manquants')
+      // Si on n'a pas de texte directement et pas de documentId/URL non plus
+      if (!analysisText && !documentId && !documentUrl) {
+        console.log('Erreur: Aucune donnée à analyser')
         return NextResponse.json(
           { error: 'Document ID, URL ou texte requis pour l\'analyse' },
           { status: 400 }
         )
       }
-
-      let analysisText = text
       
       // Si on a un documentId, récupérer le document depuis la DB
       if (documentId) {
@@ -162,11 +213,11 @@ export async function POST(request: NextRequest) {
           }
         } else {
           // Pour les autres types de fichiers ou si pas de file_path
-          analysisText = text || `Analyse du document: ${document.name}`
+          analysisText = analysisText || `Analyse du document: ${document.name}`
         }
       }
 
-      if (!analysisText) {
+      if (!analysisText || analysisText.trim().length === 0) {
         return NextResponse.json(
           { error: 'Impossible d\'extraire le texte du document' },
           { status: 400 }
