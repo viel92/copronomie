@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
           } catch (pdfError) {
             console.error('Erreur extraction PDF:', pdfError)
             return NextResponse.json(
-              { error: `Erreur extraction PDF: ${pdfError instanceof Error ? pdfError.message : 'Erreur inconnue'}` },
+              { error: `Erreur extraction PDF: ${pdfError instanceof Error ? pdfError.message : JSON.stringify(pdfError)}` },
               { status: 500 }
             )
           }

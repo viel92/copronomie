@@ -604,7 +604,7 @@ export default function ComparatorV2Page() {
                   <p className="text-lg">
                     {formatPrice(comparison.analyse_ecarts.ecart_prix_max_min.montant)}
                     <span className="text-sm text-slate-600 ml-2">
-                      ({comparison.analyse_ecarts.ecart_prix_max_min.pourcentage.toFixed(1)}%)
+                      ({(Number(comparison.analyse_ecarts.ecart_prix_max_min.pourcentage) || 0).toFixed(1)}%)
                     </span>
                   </p>
                 </div>
