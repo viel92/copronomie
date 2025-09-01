@@ -12,6 +12,7 @@
     "@hookform/resolvers": "^5.2.1",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.56.1",
+    "@supabase/auth-helpers-nextjs": "^0.8.7",
     "@types/pdf-parse": "^1.1.5",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.2",
