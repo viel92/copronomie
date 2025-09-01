@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/auth-middleware'
 import OpenAI from 'openai'
-import { createRequire } from 'module'
+import { extractPdfText } from '@/lib/pdf-extract'
 
 // Forcer le runtime Node.js pour cette route (pas Edge)
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic' // Pour les uploads de fichiers
-
-const require = createRequire(import.meta.url)
 
 // Initialiser OpenAI
 const openai = new OpenAI({
@@ -61,44 +59,10 @@ export async function POST(request: NextRequest) {
             const arrayBuffer = await file.arrayBuffer()
             const buffer = Buffer.from(arrayBuffer)
             
-            // Extraire le texte avec pdfjs-dist build Node.js (sans dépendances DOM)
-            console.log('Import pdfjs-dist build Node.js...')
+            // Extraire le texte avec module dédié (évite hoisting Turbopack)
+            console.log('Extraction PDF avec module isolé...')
             
-            // Build ES Module avec polyfills pour Node.js
-            // Polyfills minimaux avant import
-            if (typeof globalThis.DOMMatrix === 'undefined') {
-              (globalThis as any).DOMMatrix = class { constructor() {} }
-            }
-            if (typeof globalThis.ImageData === 'undefined') {
-              (globalThis as any).ImageData = class { constructor() {} }
-            }
-            if (typeof globalThis.Path2D === 'undefined') {
-              (globalThis as any).Path2D = class { constructor() {} }
-            }
-            
-            const pdfjs = require('pdfjs-dist')
-            
-            // Configuration pour environnement Node.js
-            pdfjs.GlobalWorkerOptions.workerSrc = ''
-            
-            const loadingTask = pdfjs.getDocument({
-              data: buffer,
-              disableWorker: true,
-              isEvalSupported: false,
-              disableFontFace: true,
-              useSystemFonts: false
-            })
-            const doc = await loadingTask.promise
-            console.log('PDF chargé, pages:', doc.numPages)
-            
-            const pages: string[] = []
-            for (let i = 1; i <= doc.numPages; i++) {
-              const page = await doc.getPage(i)
-              const { items } = await page.getTextContent({ normalizeWhitespace: true })
-              pages.push(items.map((item: any) => item.str).join(' '))
-            }
-            
-            analysisText = pages.join('\n\n')
+            analysisText = await extractPdfText(buffer)
             console.log('Texte extrait du PDF, longueur:', analysisText.length)
           }
         } catch (formError) {
