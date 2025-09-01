@@ -60,12 +60,11 @@ export async function POST(request: NextRequest) {
             
             // Polyfills pour l'environnement serveur
             if (typeof globalThis.DOMMatrix === 'undefined') {
-              globalThis.DOMMatrix = class DOMMatrix {
-                constructor() {
-                  this.a = 1; this.b = 0; this.c = 0; 
-                  this.d = 1; this.e = 0; this.f = 0;
-                }
-              } as any
+              (globalThis as any).DOMMatrix = class {
+                a = 1; b = 0; c = 0; 
+                d = 1; e = 0; f = 0;
+                constructor() {}
+              }
             }
             
             const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js')
@@ -177,12 +176,11 @@ export async function POST(request: NextRequest) {
             
             // Polyfills pour l'environnement serveur
             if (typeof globalThis.DOMMatrix === 'undefined') {
-              globalThis.DOMMatrix = class DOMMatrix {
-                constructor() {
-                  this.a = 1; this.b = 0; this.c = 0; 
-                  this.d = 1; this.e = 0; this.f = 0;
-                }
-              } as any
+              (globalThis as any).DOMMatrix = class {
+                a = 1; b = 0; c = 0; 
+                d = 1; e = 0; f = 0;
+                constructor() {}
+              }
             }
             
             const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js')
