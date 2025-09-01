@@ -110,28 +110,27 @@ export default function ComparatorV2Page() {
     setFiles(prev => prev.filter((_, i) => i !== index))
   }
 
-  // Fonction pour extraire le texte d'un PDF (chargement dynamique côté client)
+  // Fonction pour extraire le texte d'un PDF via l'API serveur (plus robuste)
   const extractTextFromPDF = async (file: File): Promise<string> => {
-    // Import dynamique de PDF.js pour éviter les erreurs SSR
-    const pdfjsLib = await import('pdfjs-dist')
+    const formData = new FormData()
+    formData.append('file', file)
     
-    // Configuration du worker (URL locale) 
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js'
-    
-    const arrayBuffer = await file.arrayBuffer()
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-    let fullText = ''
-    
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i)
-      const textContent = await page.getTextContent()
-      const pageText = textContent.items
-        .map((item: { str: string }) => item.str)
-        .join(' ')
-      fullText += pageText + '\n'
+    try {
+      const response = await fetch('/api/analyze-devis', {
+        method: 'POST',
+        body: formData
+      })
+      
+      if (!response.ok) {
+        throw new Error('Erreur lors de l\'analyse du PDF')
+      }
+      
+      const result = await response.json()
+      return result.extractedText || ''
+    } catch (error) {
+      console.error('Erreur extraction PDF:', error)
+      return `Contenu de ${file.name} (extraction impossible)`
     }
-    
-    return fullText
   }
 
   const compareDevis = async () => {
