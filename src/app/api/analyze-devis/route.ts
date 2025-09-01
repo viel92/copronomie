@@ -140,48 +140,11 @@ export async function POST(request: NextRequest) {
             const buffer = Buffer.from(arrayBuffer)
             console.log('Buffer créé, taille:', buffer.length)
 
-            // Tenter l'extraction avec pdfjs-dist build Node.js (sans dépendances DOM)
-            console.log('Import pdfjs-dist build Node.js...')
+            // Tenter l'extraction avec module dédié (évite hoisting Turbopack)
+            console.log('Extraction PDF avec module isolé...')
             
-            // Build ES Module avec polyfills pour Node.js
-            // Polyfills minimaux avant import
-            if (typeof globalThis.DOMMatrix === 'undefined') {
-              (globalThis as any).DOMMatrix = class { constructor() {} }
-            }
-            if (typeof globalThis.ImageData === 'undefined') {
-              (globalThis as any).ImageData = class { constructor() {} }
-            }
-            if (typeof globalThis.Path2D === 'undefined') {
-              (globalThis as any).Path2D = class { constructor() {} }
-            }
-            
-            const pdfjs = require('pdfjs-dist')
-            console.log('pdfjs-dist importé')
-            
-            console.log('Chargement du document PDF...')
-            // Configuration pour environnement Node.js
-            pdfjs.GlobalWorkerOptions.workerSrc = ''
-            
-            const loadingTask = pdfjs.getDocument({
-              data: buffer,
-              disableWorker: true,
-              isEvalSupported: false,
-              disableFontFace: true,
-              useSystemFonts: false
-            })
-            const doc = await loadingTask.promise
-            console.log('PDF chargé, pages:', doc.numPages)
-            
-            const pages: string[] = []
-            for (let i = 1; i <= doc.numPages; i++) {
-              console.log(`Extraction page ${i}/${doc.numPages}`)
-              const page = await doc.getPage(i)
-              const { items } = await page.getTextContent({ normalizeWhitespace: true })
-              pages.push(items.map((item: any) => item.str).join(' '))
-            }
-            
-            analysisText = pages.join('\n\n')
-            console.log('Texte extrait, longueur:', analysisText.length)
+            analysisText = await extractPdfText(buffer)
+            console.log('Texte extrait du PDF, longueur:', analysisText.length)
 
             if (!analysisText || analysisText.trim().length === 0) {
               throw new Error('Texte PDF vide après extraction')

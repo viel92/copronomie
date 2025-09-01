@@ -13,7 +13,7 @@ export async function extractPdfText(buffer: ArrayBuffer): Promise<string> {
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
   
   // Configuration serverless
-  // @ts-ignore
+  // @ts-expect-error - GlobalWorkerOptions type incorrect for serverless
   pdfjs.GlobalWorkerOptions.workerSrc = null
   
   const doc = await pdfjs.getDocument({
