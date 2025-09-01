@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/auth-middleware'
 import OpenAI from 'openai'
+import { createRequire } from 'module'
 
 // Forcer le runtime Node.js pour cette route (pas Edge)
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic' // Pour les uploads de fichiers
+
+const require = createRequire(import.meta.url)
 
 // Initialiser OpenAI
 const openai = new OpenAI({
@@ -58,34 +61,29 @@ export async function POST(request: NextRequest) {
             const arrayBuffer = await file.arrayBuffer()
             const buffer = Buffer.from(arrayBuffer)
             
-            // Extraire le texte avec pdfjs-dist (configuration ESM pour Vercel)
-            console.log('Import pdfjs-dist ESM...')
+            // Extraire le texte avec pdfjs-dist build Node.js (sans dépendances DOM)
+            console.log('Import pdfjs-dist build Node.js...')
             
-            // Import ESM pour Vercel Serverless Functions avec canvas natif
-            const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
+            // Build Node.js officielle - pas de DOMMatrix/Canvas
+            const pdfjs = require('pdfjs-dist/build/pdf.node.js')
             
-            // Configuration pour environnement serverless
-            pdfjs.GlobalWorkerOptions.workerSrc = ''
-            pdfjs.GlobalWorkerOptions.workerPort = null as any
-            
-            const doc = await pdfjs.getDocument({
+            const loadingTask = pdfjs.getDocument({
               data: buffer,
-              useSystemFonts: true,
-              isEvalSupported: false,
-              disableFontFace: true,
-              standardFontDataUrl: ''
-            }).promise
-            
+              disableWorker: true,     // pas de worker
+              isEvalSupported: false,  // pas d'eval
+              disableFontFace: true,   // pas de chargement de polices
+            })
+            const doc = await loadingTask.promise
             console.log('PDF chargé, pages:', doc.numPages)
             
-            const texts: string[] = []
+            const pages: string[] = []
             for (let i = 1; i <= doc.numPages; i++) {
               const page = await doc.getPage(i)
-              const { items } = await page.getTextContent()
-              texts.push(items.map((item: any) => item.str).join(' '))
+              const { items } = await page.getTextContent({ normalizeWhitespace: true })
+              pages.push(items.map((item: any) => item.str).join(' '))
             }
             
-            analysisText = texts.join('\n\n')
+            analysisText = pages.join('\n\n')
             console.log('Texte extrait du PDF, longueur:', analysisText.length)
           }
         } catch (formError) {
@@ -163,36 +161,32 @@ export async function POST(request: NextRequest) {
             const buffer = Buffer.from(arrayBuffer)
             console.log('Buffer créé, taille:', buffer.length)
 
-            // Tenter l'extraction avec pdfjs-dist (configuration ESM pour Vercel)
-            console.log('Import pdfjs-dist ESM...')
+            // Tenter l'extraction avec pdfjs-dist build Node.js (sans dépendances DOM)
+            console.log('Import pdfjs-dist build Node.js...')
             
-            // Import ESM pour Vercel Serverless Functions avec canvas natif
-            const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
+            // Build Node.js officielle - pas de DOMMatrix/Canvas
+            const pdfjs = require('pdfjs-dist/build/pdf.node.js')
             console.log('pdfjs-dist importé')
             
-            // Configuration pour environnement serverless
-            pdfjs.GlobalWorkerOptions.workerSrc = ''
-            pdfjs.GlobalWorkerOptions.workerPort = null as any
-            
             console.log('Chargement du document PDF...')
-            const doc = await pdfjs.getDocument({
+            const loadingTask = pdfjs.getDocument({
               data: buffer,
-              useSystemFonts: true,
-              isEvalSupported: false,
-              disableFontFace: true,
-              standardFontDataUrl: ''
-            }).promise
+              disableWorker: true,     // pas de worker
+              isEvalSupported: false,  // pas d'eval
+              disableFontFace: true,   // pas de chargement de polices
+            })
+            const doc = await loadingTask.promise
             console.log('PDF chargé, pages:', doc.numPages)
             
-            const texts: string[] = []
+            const pages: string[] = []
             for (let i = 1; i <= doc.numPages; i++) {
               console.log(`Extraction page ${i}/${doc.numPages}`)
               const page = await doc.getPage(i)
-              const { items } = await page.getTextContent()
-              texts.push(items.map((item: any) => item.str).join(' '))
+              const { items } = await page.getTextContent({ normalizeWhitespace: true })
+              pages.push(items.map((item: any) => item.str).join(' '))
             }
             
-            analysisText = texts.join('\n\n')
+            analysisText = pages.join('\n\n')
             console.log('Texte extrait, longueur:', analysisText.length)
 
             if (!analysisText || analysisText.trim().length === 0) {
