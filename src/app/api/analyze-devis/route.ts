@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withAuth } from '@/lib/auth-middleware'
 import OpenAI from 'openai'
-// Dynamic import to avoid build-time initialization issues
+
+// Forcer le runtime Node.js pour cette route (pas Edge)
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic' // Pour les uploads de fichiers
 
 // Initialiser OpenAI
 const openai = new OpenAI({
