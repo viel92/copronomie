@@ -26,6 +26,7 @@ interface ConsultationWithRelations extends ConsultationDB {
     id: string
     nom: string
     adresse: string
+    nb_lots?: number
   }
   devis?: Array<{
     id: string
