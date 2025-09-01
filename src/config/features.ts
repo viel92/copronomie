@@ -20,31 +20,32 @@ export const isFeatureEnabled = (feature: FeatureFlag): boolean => {
 
 // Configuration des modules par rôle
 export const ROLE_PERMISSIONS = {
-  admin: Object.keys(FEATURES),
-  owner: Object.keys(FEATURES),
+  admin: Object.keys(FEATURES) as (keyof typeof FEATURES)[],
+  owner: Object.keys(FEATURES) as (keyof typeof FEATURES)[],
   syndic: [
     'AI_NEGOTIATION',
-    'SMART_MATCHING',
+    'SMART_MATCHING', 
     'AG_MODE',
     'PHOTO_ANALYSIS',
     'VIRTUAL_ASSISTANT',
     'INVERSE_MARKETPLACE',
     'PREDICTIVE_ANALYTICS',
     'MULTI_TENANT',
-    'ADVANCED_FILTERS'
-  ],
+    'ADVANCED_FILTERS',
+    'REAL_TIME_NOTIFICATIONS'
+  ] as (keyof typeof FEATURES)[],
   conseil_syndical: [
     'BLOCKCHAIN_VOTES',
-    'AG_MODE',
+    'AG_MODE', 
     'PHOTO_ANALYSIS',
     'VIRTUAL_ASSISTANT',
     'ADVANCED_FILTERS'
-  ],
+  ] as (keyof typeof FEATURES)[],
   coproprietaire: [
     'BLOCKCHAIN_VOTES',
     'VIRTUAL_ASSISTANT',
     'PHOTO_ANALYSIS'
-  ]
+  ] as (keyof typeof FEATURES)[]
 } as const;
 
 export const hasPermission = (userRole: string, feature: FeatureFlag): boolean => {

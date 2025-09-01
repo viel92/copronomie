@@ -21,6 +21,7 @@ interface Report {
 interface ReportsFilters {
   type?: string
   limit?: number
+  copropriete_id?: string
 }
 
 interface CreateReportData {
@@ -29,6 +30,7 @@ interface CreateReportData {
   date_range_start?: string
   date_range_end?: string
   parameters?: any
+  copropriete_id?: string
 }
 
 class ReportsService {

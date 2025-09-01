@@ -37,9 +37,9 @@ export default function DashboardPage() {
   const { profile, loading } = useAuth()
   const { showToast, ToastComponent } = useToast()
   const [quickFilter, setQuickFilter] = useState('all')
-  const [consultations, setConsultations] = useState([])
-  const [contracts, setContracts] = useState([])
-  const [companies, setCompanies] = useState([])
+  const [consultations, setConsultations] = useState<any[]>([])
+  const [contracts, setContracts] = useState<any[]>([])
+  const [companies, setCompanies] = useState<any[]>([])
   const [coproprietes, setCoproprietes] = useState<Copropriete[]>([])
   const [selectedCopropriete, setSelectedCopropriete] = useState<string>('all')
 
@@ -85,16 +85,16 @@ export default function DashboardPage() {
         setCoproprietes(coproprietesData)
         
         // Calculer les statistiques dynamiques (seront recalculées selon la copropriété sélectionnée)
-        const activeConsultations = consultationsData.filter(c => c.status === 'En cours' || c.status === 'pending').length
-        const contractsToRenew = contractsData.filter(contract => {
-          const endDate = new Date(contract.end_date || contract.endDate)
+        const activeConsultations = consultationsData.filter((c: any) => c.status === 'En cours' || c.status === 'pending').length
+        const contractsToRenew = contractsData.filter((contract: any) => {
+          const endDate = new Date(contract.end_date)
           const threeMonthsFromNow = new Date()
           threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3)
           return endDate <= threeMonthsFromNow
         }).length
         
         // Calculer les économies (estimation basée sur les consultations terminées)
-        const completedConsultations = consultationsData.filter(c => c.status === 'Terminé' || c.status === 'completed')
+        const completedConsultations = consultationsData.filter((c: any) => c.status === 'Terminé' || c.status === 'completed')
         const estimatedSavings = completedConsultations.length * 2500 // Estimation moyenne d'économie par consultation
         
         setStats([
@@ -147,7 +147,7 @@ export default function DashboardPage() {
     )
   }
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'en cours':
       case 'pending':
@@ -166,7 +166,7 @@ export default function DashboardPage() {
     }
   }
   
-  const getAlertLevel = (endDate) => {
+  const getAlertLevel = (endDate: string) => {
     const end = new Date(endDate)
     const now = new Date()
     const diffTime = end.getTime() - now.getTime()
@@ -178,7 +178,7 @@ export default function DashboardPage() {
   }
 
   // Fonction pour filtrer les données par copropriété
-  const filterByCopropriete = (data, coproprietId) => {
+  const filterByCopropriete = (data: any[], coproprietId: string) => {
     if (coproprietId === 'all' || !coproprietId) return data
     return data.filter(item => item.copropriete_id === coproprietId)
   }
@@ -190,15 +190,15 @@ export default function DashboardPage() {
 
   // Statistiques recalculées selon la copropriété sélectionnée
   const filteredStats = {
-    activeConsultations: filteredConsultationsData.filter(c => c.status === 'En cours' || c.status === 'pending').length,
-    contractsToRenew: filteredContractsData.filter(contract => {
-      const endDate = new Date(contract.end_date || contract.endDate)
+    activeConsultations: filteredConsultationsData.filter((c: any) => c.status === 'En cours' || c.status === 'pending').length,
+    contractsToRenew: filteredContractsData.filter((contract: any) => {
+      const endDate = new Date(contract.end_date)
       const threeMonthsFromNow = new Date()
       threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3)
       return endDate <= threeMonthsFromNow
     }).length,
     totalCompanies: filteredCompaniesData.length,
-    estimatedSavings: filteredConsultationsData.filter(c => c.status === 'Terminé' || c.status === 'completed').length * 2500
+    estimatedSavings: filteredConsultationsData.filter((c: any) => c.status === 'Terminé' || c.status === 'completed').length * 2500
   }
 
   // Stats dynamiques basées sur la copropriété sélectionnée
@@ -233,7 +233,7 @@ export default function DashboardPage() {
     },
   ]
 
-  const filteredConsultations = filteredConsultationsData.filter(consultation => {
+  const filteredConsultations = filteredConsultationsData.filter((consultation: any) => {
     if (quickFilter === 'all') return true
     if (quickFilter === 'urgent') {
       const deadline = new Date(consultation.deadline || consultation.end_date)

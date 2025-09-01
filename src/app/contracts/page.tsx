@@ -353,7 +353,9 @@ export default function ContractsPage() {
                         <div className="flex items-center gap-2">
                           {getAlertBadge(contract.alertLevel || 'normal', contract.daysLeft)}
                           {contract.auto_renewal && (
-                            <RefreshCw className="h-3 w-3 text-blue-500" title="Renouvellement auto" />
+                            <span title="Renouvellement auto">
+                              <RefreshCw className="h-3 w-3 text-blue-500" />
+                            </span>
                           )}
                         </div>
                       </td>

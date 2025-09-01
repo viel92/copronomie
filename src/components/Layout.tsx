@@ -34,7 +34,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const pathname = usePathname();
   const authState = useAuth();
-  const { currentCopro, userCopros, switchCopro, user, isLoading } = authState;
+  const { currentCopro, userCopros, switchCopro, user } = authState;
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
   const [showCoproSelector, setShowCoproSelector] = React.useState(false);
 
@@ -46,25 +46,15 @@ export function Layout({ children }: LayoutProps) {
     { name: 'Entreprises', href: '/companies', icon: Users },
     { name: 'Rapports', href: '/reports', icon: BarChart3 },
     // Nouvelles features conditionnelles
-    ...(FEATURES.BLOCKCHAIN_VOTES && user && hasPermission(user.role, 'BLOCKCHAIN_VOTES') ? [{ name: 'Votes CS', href: '/votes', icon: Vote }] : []),
-    ...(FEATURES.AI_NEGOTIATION && user && hasPermission(user.role, 'AI_NEGOTIATION') ? [{ name: 'Négociation IA', href: '/negotiation', icon: Brain }] : []),
-    ...(FEATURES.SMART_MATCHING && user && hasPermission(user.role, 'SMART_MATCHING') ? [{ name: 'Matching IA', href: '/matching', icon: Target }] : []),
-    ...(FEATURES.AG_MODE && user && hasPermission(user.role, 'AG_MODE') ? [{ name: 'Mode AG', href: '/ag-presentation', icon: Presentation }] : []),
-    ...(FEATURES.PHOTO_ANALYSIS && user && hasPermission(user.role, 'PHOTO_ANALYSIS') ? [{ name: 'Photos IA', href: '/chantier-photos', icon: Camera }] : []),
-    ...(FEATURES.INVERSE_MARKETPLACE && user && hasPermission(user.role, 'INVERSE_MARKETPLACE') ? [{ name: 'Place de marché', href: '/marketplace', icon: Megaphone }] : []),
-    ...(FEATURES.PREDICTIVE_ANALYTICS && user && hasPermission(user.role, 'PREDICTIVE_ANALYTICS') ? [{ name: 'Analytics IA', href: '/analytics', icon: Analytics }] : []),
+    ...(FEATURES.BLOCKCHAIN_VOTES && user && user.role && hasPermission(user.role, 'BLOCKCHAIN_VOTES') ? [{ name: 'Votes CS', href: '/votes', icon: Vote }] : []),
+    ...(FEATURES.AI_NEGOTIATION && user && user.role && hasPermission(user.role, 'AI_NEGOTIATION') ? [{ name: 'Négociation IA', href: '/negotiation', icon: Brain }] : []),
+    ...(FEATURES.SMART_MATCHING && user && user.role && hasPermission(user.role, 'SMART_MATCHING') ? [{ name: 'Matching IA', href: '/matching', icon: Target }] : []),
+    ...(FEATURES.AG_MODE && user && user.role && hasPermission(user.role, 'AG_MODE') ? [{ name: 'Mode AG', href: '/ag-presentation', icon: Presentation }] : []),
+    ...(FEATURES.PHOTO_ANALYSIS && user && user.role && hasPermission(user.role, 'PHOTO_ANALYSIS') ? [{ name: 'Photos IA', href: '/chantier-photos', icon: Camera }] : []),
+    ...(FEATURES.INVERSE_MARKETPLACE && user && user.role && hasPermission(user.role, 'INVERSE_MARKETPLACE') ? [{ name: 'Place de marché', href: '/marketplace', icon: Megaphone }] : []),
+    ...(FEATURES.PREDICTIVE_ANALYTICS && user && user.role && hasPermission(user.role, 'PREDICTIVE_ANALYTICS') ? [{ name: 'Analytics IA', href: '/analytics', icon: Analytics }] : []),
   ];
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-600">Chargement...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -90,7 +80,7 @@ export function Layout({ children }: LayoutProps) {
                 >
                   <div className="text-left">
                     <p className="font-medium text-slate-900 text-sm">{currentCopro?.name}</p>
-                    <p className="text-xs text-slate-500">{currentCopro?.settings?.nombre_lots || 0} lots</p>
+                    <p className="text-xs text-slate-500">{(currentCopro?.settings as any)?.nombre_lots || 0} lots</p>
                   </div>
                   <ChevronDown className="h-4 w-4 text-slate-400" />
                 </button>
@@ -109,7 +99,7 @@ export function Layout({ children }: LayoutProps) {
                         }`}
                       >
                         <p className="font-medium text-slate-900 text-sm">{copro.name}</p>
-                        <p className="text-xs text-slate-500">{copro.settings?.nombre_lots || 0} lots • {copro.address}</p>
+                        <p className="text-xs text-slate-500">{(copro.settings as any)?.nombre_lots || 0} lots</p>
                       </button>
                     ))}
                   </div>
@@ -157,11 +147,11 @@ export function Layout({ children }: LayoutProps) {
               <div className="space-y-2 text-xs text-slate-600">
                 <div className="flex justify-between">
                   <span>Lots</span>
-                  <span className="font-medium">{currentCopro?.settings?.nombre_lots || 0}</span>
+                  <span className="font-medium">{(currentCopro?.settings as any)?.nombre_lots || 0}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Budget annuel</span>
-                  <span className="font-medium">{currentCopro?.settings?.budget_annuel?.toLocaleString() || 0}€</span>
+                  <span className="font-medium">{(currentCopro?.settings as any)?.budget_annuel?.toLocaleString() || 0}€</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Consultations actives</span>
@@ -170,7 +160,7 @@ export function Layout({ children }: LayoutProps) {
                 <div className="flex justify-between">
                   <span>Prochaine AG</span>
                   <span className="font-medium text-purple-600">
-                    {currentCopro?.settings?.prochaine_ag ? new Date(currentCopro.settings.prochaine_ag).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) : '--'}
+                    {(currentCopro?.settings as any)?.prochaine_ag ? new Date((currentCopro!.settings as any).prochaine_ag).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) : '--'}
                   </span>
                 </div>
               </div>
