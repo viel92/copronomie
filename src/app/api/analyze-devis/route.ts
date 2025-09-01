@@ -62,25 +62,45 @@ export async function POST(request: NextRequest) {
         // Extraire le texte du PDF si c'est un PDF
         if (document.type === 'application/pdf' && document.file_path) {
           try {
+            console.log('Début extraction PDF pour document:', document.id)
+            
             // Télécharger le fichier depuis Supabase Storage
             const { data: fileData, error: downloadError } = await supabase.storage
               .from('devis-documents')
               .download(document.file_path)
 
             if (downloadError) {
+              console.error('Erreur téléchargement Supabase:', downloadError)
               throw new Error(`Erreur téléchargement: ${downloadError.message}`)
             }
+            console.log('Fichier téléchargé, taille:', fileData.size)
 
             // Convertir le blob en buffer
             const arrayBuffer = await fileData.arrayBuffer()
             const buffer = Buffer.from(arrayBuffer)
+            console.log('Buffer créé, taille:', buffer.length)
 
-            // Extraire le texte avec pdfjs-dist (compatible Vercel)
+            // Tenter l'extraction avec pdfjs-dist
+            console.log('Import pdfjs-dist...')
             const pdfjsLib = await import('pdfjs-dist')
-            const pdf = await pdfjsLib.getDocument({ data: buffer }).promise
+            console.log('pdfjs-dist importé')
+            
+            // Désactiver le worker pour Vercel
+            if (pdfjsLib.GlobalWorkerOptions) {
+              pdfjsLib.GlobalWorkerOptions.workerSrc = null
+            }
+            
+            console.log('Chargement du document PDF...')
+            const pdf = await pdfjsLib.getDocument({ 
+              data: buffer,
+              useWorkerFetch: false,
+              isEvalSupported: false
+            }).promise
+            console.log('PDF chargé, pages:', pdf.numPages)
             
             let fullText = ''
             for (let i = 1; i <= pdf.numPages; i++) {
+              console.log(`Extraction page ${i}/${pdf.numPages}`)
               const page = await pdf.getPage(i)
               const textContent = await page.getTextContent()
               const pageText = textContent.items
@@ -88,16 +108,28 @@ export async function POST(request: NextRequest) {
                 .join(' ')
               fullText += pageText + '\n'
             }
+            
+            console.log('Texte extrait, longueur:', fullText.length)
             analysisText = fullText
 
             if (!analysisText || analysisText.trim().length === 0) {
-              throw new Error('Impossible d\'extraire le texte du PDF')
+              throw new Error('Texte PDF vide après extraction')
             }
 
           } catch (pdfError) {
-            console.error('Erreur extraction PDF:', pdfError)
+            console.error('Erreur détaillée extraction PDF:', {
+              error: pdfError,
+              message: pdfError instanceof Error ? pdfError.message : 'Erreur inconnue',
+              stack: pdfError instanceof Error ? pdfError.stack : undefined,
+              documentId: document.id,
+              filePath: document.file_path
+            })
             return NextResponse.json(
-              { error: `Erreur extraction PDF: ${pdfError instanceof Error ? pdfError.message : JSON.stringify(pdfError)}` },
+              { 
+                error: `Erreur extraction PDF: ${pdfError instanceof Error ? pdfError.message : 'Erreur inconnue'}`,
+                details: pdfError instanceof Error ? pdfError.stack : JSON.stringify(pdfError),
+                documentId: document.id
+              },
               { status: 500 }
             )
           }
