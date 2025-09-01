@@ -55,45 +55,33 @@ export async function POST(request: NextRequest) {
             const arrayBuffer = await file.arrayBuffer()
             const buffer = Buffer.from(arrayBuffer)
             
-            // Extraire le texte avec pdfjs-dist
-            console.log('Import pdfjs-dist...')
+            // Extraire le texte avec pdfjs-dist (configuration ESM pour Vercel)
+            console.log('Import pdfjs-dist ESM...')
             
-            // Polyfills pour l'environnement serveur
-            if (typeof globalThis.DOMMatrix === 'undefined') {
-              (globalThis as any).DOMMatrix = class {
-                a = 1; b = 0; c = 0; 
-                d = 1; e = 0; f = 0;
-                constructor() {}
-              }
-            }
+            // Import ESM pour Vercel Serverless Functions
+            const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
             
-            const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js')
+            // Désactiver le worker pour environnement serverless
+            pdfjs.GlobalWorkerOptions.workerSrc = ''
             
-            if (pdfjsLib.GlobalWorkerOptions) {
-              pdfjsLib.GlobalWorkerOptions.workerSrc = ''
-            }
-            
-            const pdf = await pdfjsLib.getDocument({ 
+            const doc = await pdfjs.getDocument({
               data: buffer,
-              useWorkerFetch: false,
+              useSystemFonts: true,
               isEvalSupported: false,
-              standardFontDataUrl: '',
               disableFontFace: true,
-              useSystemFonts: false
+              standardFontDataUrl: ''
             }).promise
-            console.log('PDF chargé, pages:', pdf.numPages)
             
-            let fullText = ''
-            for (let i = 1; i <= pdf.numPages; i++) {
-              const page = await pdf.getPage(i)
-              const textContent = await page.getTextContent()
-              const pageText = textContent.items
-                .map((item: any) => item.str)
-                .join(' ')
-              fullText += pageText + '\n'
+            console.log('PDF chargé, pages:', doc.numPages)
+            
+            const texts: string[] = []
+            for (let i = 1; i <= doc.numPages; i++) {
+              const page = await doc.getPage(i)
+              const { items } = await page.getTextContent()
+              texts.push(items.map((item: any) => item.str).join(' '))
             }
             
-            analysisText = fullText
+            analysisText = texts.join('\n\n')
             console.log('Texte extrait du PDF, longueur:', analysisText.length)
           }
         } catch (formError) {
@@ -171,50 +159,36 @@ export async function POST(request: NextRequest) {
             const buffer = Buffer.from(arrayBuffer)
             console.log('Buffer créé, taille:', buffer.length)
 
-            // Tenter l'extraction avec pdfjs-dist
-            console.log('Import pdfjs-dist...')
+            // Tenter l'extraction avec pdfjs-dist (configuration ESM pour Vercel)
+            console.log('Import pdfjs-dist ESM...')
             
-            // Polyfills pour l'environnement serveur
-            if (typeof globalThis.DOMMatrix === 'undefined') {
-              (globalThis as any).DOMMatrix = class {
-                a = 1; b = 0; c = 0; 
-                d = 1; e = 0; f = 0;
-                constructor() {}
-              }
-            }
-            
-            const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js')
+            // Import ESM pour Vercel Serverless Functions
+            const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
             console.log('pdfjs-dist importé')
             
-            // Désactiver le worker pour Vercel
-            if (pdfjsLib.GlobalWorkerOptions) {
-              pdfjsLib.GlobalWorkerOptions.workerSrc = ''
-            }
+            // Désactiver le worker pour environnement serverless
+            pdfjs.GlobalWorkerOptions.workerSrc = ''
             
             console.log('Chargement du document PDF...')
-            const pdf = await pdfjsLib.getDocument({ 
+            const doc = await pdfjs.getDocument({
               data: buffer,
-              useWorkerFetch: false,
+              useSystemFonts: true,
               isEvalSupported: false,
-              standardFontDataUrl: '',
               disableFontFace: true,
-              useSystemFonts: false
+              standardFontDataUrl: ''
             }).promise
-            console.log('PDF chargé, pages:', pdf.numPages)
+            console.log('PDF chargé, pages:', doc.numPages)
             
-            let fullText = ''
-            for (let i = 1; i <= pdf.numPages; i++) {
-              console.log(`Extraction page ${i}/${pdf.numPages}`)
-              const page = await pdf.getPage(i)
-              const textContent = await page.getTextContent()
-              const pageText = textContent.items
-                .map((item: any) => item.str)
-                .join(' ')
-              fullText += pageText + '\n'
+            const texts: string[] = []
+            for (let i = 1; i <= doc.numPages; i++) {
+              console.log(`Extraction page ${i}/${doc.numPages}`)
+              const page = await doc.getPage(i)
+              const { items } = await page.getTextContent()
+              texts.push(items.map((item: any) => item.str).join(' '))
             }
             
-            console.log('Texte extrait, longueur:', fullText.length)
-            analysisText = fullText
+            analysisText = texts.join('\n\n')
+            console.log('Texte extrait, longueur:', analysisText.length)
 
             if (!analysisText || analysisText.trim().length === 0) {
               throw new Error('Texte PDF vide après extraction')
