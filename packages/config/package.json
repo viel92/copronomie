@@ -1,0 +1,29 @@
+{
+  "name": "@copronomie/config",
+  "version": "1.0.0",
+  "description": "Configurations partagées pour Copronomie",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "echo 'No tests for config package'",
+    "test:ci": "echo 'No tests for config package'",
+    "type-check": "tsc --noEmit",
+    "lint": "echo 'No lint for config package'"
+  },
+  "dependencies": {
+    "@copronomie/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

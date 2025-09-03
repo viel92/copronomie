@@ -1,42 +1,27 @@
 {
-  "name": "copronomie-saas",
-  "version": "0.1.0",
+  "name": "copronomie",
+  "version": "1.0.0",
   "private": true,
+  "description": "SaaS de comparaison de devis pour copropriétés",
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
+  },
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "start": "next start",
-    "lint": "eslint"
+    "build": "pnpm -r build",
+    "dev": "pnpm -r dev",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "test:ci": "pnpm -r test:ci",
+    "type-check": "pnpm -r type-check",
+    "clean": "pnpm -r clean && rm -rf node_modules"
   },
-  "dependencies": {
-    "@hookform/resolvers": "^5.2.1",
-    "@supabase/auth-helpers-nextjs": "^0.8.7",
-    "@supabase/ssr": "^0.7.0",
-    "@supabase/supabase-js": "^2.56.1",
-    "@types/pdf-parse": "^1.1.5",
-    "html2canvas": "^1.4.1",
-    "jspdf": "^3.0.2",
-    "lucide-react": "^0.542.0",
-    "next": "15.5.2",
-    "openai": "^5.16.0",
-    "pdf-parse": "^1.1.1",
-    "pdf2pic": "^3.2.0",
-    "pdfjs-dist": "^5.4.149",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "react-hook-form": "^7.62.0",
-    "zod": "^3.23.8"
-  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.5.2",
-    "supabase": "^2.39.2",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5.0.0"
   }
 }

@@ -1,0 +1,86 @@
+# Caddyfile for Staging (Hetzner VPS) 
+# Domain: staging.copronomie.fr
+
+{
+    # Global options
+    email admin@copronomie.fr
+    
+    # Enable HTTP/3 support
+    servers {
+        protocols h1 h2 h3
+    }
+    
+    # Security headers (less strict for staging)
+    header / {
+        # Basic security headers
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        
+        # Remove server info
+        -Server
+        
+        # No cache for staging
+        Cache-Control "no-cache, no-store, must-revalidate"
+    }
+}
+
+# Staging domain
+staging.copronomie.fr {
+    # Reverse proxy to Next.js app
+    reverse_proxy web:3000 {
+        # Health check
+        health_uri /api/health
+        health_interval 30s
+        health_timeout 10s
+        
+        # Headers for better debugging
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Port {server_port}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Staging-Environment "true"
+    }
+    
+    # No caching for staging
+    header Cache-Control "no-cache, no-store, must-revalidate"
+    
+    # Enable gzip compression
+    encode zstd gzip
+    
+    # More permissive rate limiting for testing
+    rate_limit {
+        zone staging_zone {
+            key {remote_host}
+            events 200
+            window 1m
+        }
+    }
+    
+    # Detailed logging for debugging
+    log {
+        output file /var/log/caddy/staging.copronomie.log {
+            roll_size 50mb
+            roll_keep 5
+            roll_keep_for 168h
+        }
+        format json
+        level DEBUG
+    }
+    
+    # Basic auth for staging (optional)
+    # basicauth /admin/* {
+    #     admin $2a$14$hashed_password_here
+    # }
+}
+
+# Health check endpoint
+health.staging.copronomie.fr {
+    respond /health "STAGING OK" 200
+    
+    log {
+        output discard
+    }
+}

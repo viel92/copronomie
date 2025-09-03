@@ -1,0 +1,106 @@
+# Caddyfile for Production (OVH VPS)
+# Domain: copronomie.fr
+
+{
+    # Global options
+    email admin@copronomie.fr
+    
+    # Enable HTTP/3 support
+    servers {
+        protocols h1 h2 h3
+    }
+    
+    # Security headers
+    header / {
+        # Security headers
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        
+        # Remove server info
+        -Server
+        
+        # Cache control
+        Cache-Control "public, max-age=3600"
+    }
+}
+
+# Main domain
+copronomie.fr, www.copronomie.fr {
+    # Redirect www to non-www
+    @www host www.copronomie.fr
+    redir @www https://copronomie.fr{uri} permanent
+    
+    # Reverse proxy to Next.js app
+    reverse_proxy web:3000 {
+        # Health check
+        health_uri /api/health
+        health_interval 30s
+        health_timeout 10s
+        
+        # Headers for better performance
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Port {server_port}
+        header_up X-Forwarded-Proto {scheme}
+        
+        # Load balancing (if multiple instances)
+        lb_policy least_conn
+    }
+    
+    # Static files caching
+    @static {
+        path *.ico *.css *.js *.png *.jpg *.jpeg *.gif *.svg *.woff *.woff2 *.ttf *.eot
+    }
+    header @static Cache-Control "public, max-age=31536000, immutable"
+    
+    # API routes (no cache)
+    @api {
+        path /api/*
+    }
+    header @api Cache-Control "no-cache, no-store, must-revalidate"
+    
+    # Enable gzip compression
+    encode zstd gzip
+    
+    # Rate limiting
+    rate_limit {
+        zone dynamic_zone {
+            key {remote_host}
+            events 100
+            window 1m
+        }
+        zone api_zone {
+            key {remote_host}
+            events 20
+            window 1m
+            match {
+                path /api/*
+            }
+        }
+    }
+    
+    # Logging
+    log {
+        output file /var/log/caddy/copronomie.log {
+            roll_size 100mb
+            roll_keep 10
+            roll_keep_for 720h
+        }
+        format json
+        level INFO
+    }
+}
+
+# Health check endpoint for load balancer
+health.copronomie.fr {
+    respond /health "OK" 200
+    
+    log {
+        output discard
+    }
+}

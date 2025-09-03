@@ -1,0 +1,34 @@
+{
+  "name": "@copronomie/supabase",
+  "version": "1.0.0",
+  "description": "Configuration et types Supabase pour Copronomie",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "generate-types": "supabase gen types typescript --project-id YOUR_PROJECT_ID > src/database.types.ts",
+    "test": "echo 'No tests for supabase package'",
+    "test:ci": "echo 'No tests for supabase package'",
+    "type-check": "tsc --noEmit",
+    "lint": "echo 'No lint for supabase package'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.56.1",
+    "@supabase/auth-helpers-nextjs": "^0.8.7",
+    "@supabase/ssr": "^0.7.0",
+    "@copronomie/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "supabase": "^2.39.2"
+  }
+}
